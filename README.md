@@ -27,6 +27,8 @@ curl --fail http://127.0.0.1:8765/healthz
 
 The health response is `{"status": "ok"}`. The launcher creates a private `.env` with a random deletion token. Uploaded files live in the Docker volume `webnote_data`, independently of this source directory.
 
+If your account cannot access the Docker daemon, run Docker-backed launcher commands with `sudo`, for example `sudo ./webnote.sh build` and `sudo ./webnote.sh up`. The `init` command itself does not need Docker privileges. The installation requires Compose v2 (`docker compose`); the older `docker-compose` command is not a substitute.
+
 For access from other devices, initialize with your own HTTPS origin instead, such as `https://webnote.example.com`, and configure an HTTPS reverse proxy to forward to `127.0.0.1:8765`. For an existing installation, edit `WEBNOTE_PUBLIC_URL` in the private `.env` and run `./webnote.sh up`; do not run `init` again. DNS, certificates, and the reverse proxy are configured separately.
 
 ## Upload

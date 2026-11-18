@@ -25,6 +25,8 @@ docker ps --format '{{.Names}}\t{{.Ports}}'
 
 The documented deployment uses Linux Docker Engine and Compose. Native release archives support amd64 and arm64. Check the intended port, available disk, and existing Compose projects and volumes. Install missing dependencies using the distribution's method only within the requested scope; do not perform a whole-system upgrade or change global networking.
 
+If Docker reports a socket permission error, check `sudo -n docker version` and use `sudo` for Docker-backed launcher commands when available. `init` does not require Docker access. Do not loosen socket permissions or change account groups just for installation. Verify `docker compose version` under the same privilege level: an installed legacy `docker-compose` v1 does not provide the required Compose v2 plugin.
+
 Before changing an existing instance, identify its actual Compose directory, project, image, configuration, and data volume. Do not print `.env`, use `set -x`, or dump container environment variables. Preserve the deletion token unless rotation was requested. Preparing source alone does not authorize changing a running service.
 
 ## 2. Select source or a verified release
