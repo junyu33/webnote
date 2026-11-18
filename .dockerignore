@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!server.py
+!API_USAGE.txt
+!.dockerignore
+!LICENSE

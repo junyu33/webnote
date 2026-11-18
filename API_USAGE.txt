@@ -1,0 +1,94 @@
+Webnote File API
+
+Base URL: https://webnote.example.com
+Online guide: https://webnote.example.com/docs
+Plain text: https://webnote.example.com/WEBNOTE_USAGE.txt
+
+Uploads, downloads, HEAD requests and metadata queries are public.
+Only deletion requires the owner's Bearer token.
+Maximum file size: 100 MiB (104857600 bytes).
+Total storage is limited to 1 GiB, including uploads in progress.
+Files expire 30 minutes after upload. Downloading a file does not extend its expiration.
+Files are preserved byte for byte, including spaces and line endings.
+
+UPLOAD
+
+Replace example.md with your local file:
+
+  curl --fail-with-body https://webnote.example.com/api/files \
+    -H 'Content-Type: application/octet-stream' \
+    -H 'X-Filename: example.md' \
+    --data-binary @example.md \
+    -o upload-response.json
+
+Send raw bytes, not a multipart form. Content-Length is required; curl sets it
+automatically above. Empty files are supported. X-Filename is optional (default:
+file). Percent-encode non-ASCII UTF-8 names. Paths and control characters are
+rejected. Each upload creates a new ID without overwriting earlier uploads.
+
+Success: HTTP 201 and JSON with id, filename, bytes, sha256 and download_url.
+The response also includes expires_at, a UTC timestamp 30 minutes after upload.
+
+DOWNLOAD
+
+Open the returned download_url in your browser, or replace FILE_ID below with
+the id returned by upload:
+
+  curl --fail https://webnote.example.com/api/files/FILE_ID -o downloaded.md
+
+Anyone with this URL can download the file. No token is required.
+Downloads do not extend the TTL. After expires_at, downloads, HEAD requests
+and metadata queries return HTTP 404. A cleanup pass runs every 60 seconds.
+
+VERIFY CONTENTS
+
+  sha256sum example.md downloaded.md
+  cmp example.md downloaded.md
+
+The SHA-256 must match the upload response. cmp exits with status 0 and prints
+nothing when the files are identical.
+
+METADATA AND HEADERS
+
+  curl --fail-with-body https://webnote.example.com/api/files/FILE_ID/meta
+  curl --fail --head https://webnote.example.com/api/files/FILE_ID
+
+Both are public. Content-Length is the file size; ETag is the SHA-256.
+
+DELETE (OWNER TOKEN REQUIRED)
+
+Set WEBNOTE_TOKEN to the owner's deletion token in your shell, then run:
+
+  curl --fail-with-body -X DELETE \
+    https://webnote.example.com/api/files/by-name \
+    -H "Authorization: Bearer $WEBNOTE_TOKEN" \
+    -H 'X-Filename: example.md'
+
+Deletion is permanent. Success: HTTP 200 and JSON with deleted=true.
+If multiple files share the name, HTTP 409 is returned without deleting.
+Add -H 'X-File-ID: FILE_ID' to select one; both ID and filename must match.
+Filenames are matched exactly and are never used as filesystem paths.
+
+ENDPOINTS
+
+  GET     /                       This guide (public)
+  GET     /docs                   This guide (public)
+  GET     /WEBNOTE_USAGE.txt       This guide as plain text (public)
+  GET     /healthz                Health check (public)
+  POST    /api/files              Upload raw bytes (public)
+  GET     /api/files/FILE_ID       Download raw bytes (public)
+  HEAD    /api/files/FILE_ID       File headers (public)
+  GET     /api/files/FILE_ID/meta  File metadata (public)
+  DELETE  /api/files/by-name       Delete by filename (token required)
+
+ERRORS
+
+  400  Invalid filename, encoding, or file ID.
+  401  Missing or incorrect deletion token.
+  404  Unknown endpoint, filename, or file ID.
+  409  Ambiguous filename or unexpected storage entry; nothing deleted.
+  411  Missing or invalid Content-Length for upload.
+  413  File exceeds 100 MiB.
+  507  Not enough space within the 1 GiB storage limit.
+
+There is no file-list API or web editor.

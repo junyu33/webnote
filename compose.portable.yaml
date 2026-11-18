@@ -1,0 +1,41 @@
+name: ${WEBNOTE_PROJECT:-webnote}
+services:
+  webnote:
+    image: ${WEBNOTE_IMAGE:-webnote:portable}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    environment:
+      WEBNOTE_HOST: 0.0.0.0
+      WEBNOTE_PORT: "8765"
+      WEBNOTE_STORAGE: /data
+      WEBNOTE_PUBLIC_URL: ${WEBNOTE_PUBLIC_URL:?Run ./webnote.sh init URL first}
+      WEBNOTE_TOKEN: ${WEBNOTE_TOKEN:?Run ./webnote.sh init URL first}
+      WEBNOTE_MAX_BYTES: ${WEBNOTE_MAX_BYTES:-104857600}
+    ports:
+      - "127.0.0.1:${WEBNOTE_BIND_PORT:-8765}:8765"
+    volumes:
+      - data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 64
+    ulimits:
+      nofile:
+        soft: 256
+        hard: 256
+    stop_grace_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  data:

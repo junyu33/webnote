@@ -1,0 +1,44 @@
+# Private runtime configuration
+.env
+.env.*
+*.env
+!.env.example
+
+# Uploaded files and backups
+/data/
+/uploads/
+/backups/
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated images, packages, and Python caches
+/dist/
+/images/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Host-specific operational material; maintained outside this source tree
+/ops/
+/verification/
+/.local/
+*.log
+/compose.yaml
+/container-check.py
+/install.sh
+/migrate-to-compose.sh
+/nginx-http.conf
+/nginx-https.conf
+/renew-nginx.sh
+/webnote-compose.service
+/webnote.service
+
+.DS_Store
+Thumbs.db
